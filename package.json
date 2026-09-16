@@ -1,0 +1,6 @@
+{
+  "name": "sitam",
+  "scripts": {
+    "start":"npx serve . -l $PORT"
+  }
+}
