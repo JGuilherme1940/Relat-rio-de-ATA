@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="brand-rail" aria-hidden="true"></div>
+
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-name">Attendance Console</span>
+            </div>
+            <span class="topbar-meta">Registro de presença · atualizado em tempo real</span>
+        </div>
+    </header>
+
+    <main class="shell">
+
+        <section class="kpi-strip">
+            <div class="kpi">
+                <span class="kpi-value">{{ total }}</span>
+                <span class="kpi-label">Registros totais</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi-value kpi-positive">{{ presentes }}</span>
+                <span class="kpi-label">Presenças</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi-value kpi-negative">{{ faltas }}</span>
+                <span class="kpi-label">Faltas</span>
+            </div>
+        </section>
+
+        <div class="panel-grid">
+            <form class="panel" action="{{ url_for('adicionar') }}" method="POST">
+                <h2>Novo registro</h2>
+                <div class="form-row">
+                    <div class="field field-wide">
+                        <label for="nome">Nome</label>
+                        <input type="text" id="nome" name="nome" placeholder="Nome completo" required>
+                    </div>
+                    <div class="field">
+                        <label for="data">Data</label>
+                        <input type="date" id="data" name="data" value="{{ hoje }}" required>
+                    </div>
+                    <div class="field">
+                        <label for="horario">Horário</label>
+                        <input type="time" id="horario" name="horario" value="{{ agora }}" required>
+                    </div>
+                    <div class="field">
+                        <label for="status">Status</label>
+                        <select id="status" name="status">
+                            <option value="Presente">Presente</option>
+                            <option value="Falta">Falta</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="observacao">Observação (opcional)</label>
+                    <input type="text" id="observacao" name="observacao" placeholder="Ex: atestado médico, atraso, etc.">
+                </div>
+                <button type="submit" class="btn-primary">Adicionar registro</button>
+            </form>
+
+            <form class="panel panel-filter" action="{{ url_for('index') }}" method="GET">
+                <h2>Filtrar</h2>
+                <div class="field">
+                    <label for="filtro_nome">Nome</label>
+                    <input type="text" id="filtro_nome" name="filtro_nome" value="{{ filtro_nome }}" placeholder="Buscar por nome">
+                </div>
+                <div class="field">
+                    <label for="filtro_data">Data</label>
+                    <input type="date" id="filtro_data" name="filtro_data" value="{{ filtro_data }}">
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn-secondary">Aplicar filtro</button>
+                    <a class="clear-link" href="{{ url_for('index') }}">Limpar</a>
+                </div>
+            </form>
+        </div>
+
+        <section class="data-grid">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Status</th>
+                        <th>Observação</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td class="cell-name">{{ r["nome"] }}</td>
+                        <td class="cell-mono">{{ r["data"] }}</td>
+                        <td class="cell-mono">{{ r["horario"] }}</td>
+                        <td>
+                            <span class="tag {{ 'tag-presente' if r['status'] == 'Presente' else 'tag-falta' }}">
+                                {{ r["status"] }}
+                            </span>
+                        </td>
+                        <td class="cell-obs">{{ r["observacao"] or "—" }}</td>
+                        <td class="cell-actions">
+                            <form action="{{ url_for('excluir', registro_id=r['id']) }}" method="POST" onsubmit="return confirm('Excluir este registro?');">
+                                <button type="submit" class="btn-excluir">Excluir</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty">Nenhum registro encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>
